@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getUserProfile } from '@/lib/supabase/admin'
 import LogoutButton from '@/components/auth/LogoutButton'
 
 export default async function OwnerDashboard() {
@@ -8,7 +7,11 @@ export default async function OwnerDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const profile = await getUserProfile(user.id)
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role, full_name')
+    .eq('id', user.id)
+    .single()
   if (profile?.role !== 'owner') redirect('/')
 
   return (
