@@ -17,6 +17,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['restaurants']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['restaurants']['Insert']>
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -28,6 +29,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['user_profiles']['Row'], 'created_at'>
         Update: Partial<Database['public']['Tables']['user_profiles']['Insert']>
+        Relationships: []
       }
       tables: {
         Row: {
@@ -41,6 +43,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['tables']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['tables']['Insert']>
+        Relationships: []
       }
       categories: {
         Row: {
@@ -52,6 +55,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['categories']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['categories']['Insert']>
+        Relationships: []
       }
       products: {
         Row: {
@@ -68,6 +72,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['products']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['products']['Insert']>
+        Relationships: []
       }
       inventory_lots: {
         Row: {
@@ -81,6 +86,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['inventory_lots']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['inventory_lots']['Insert']>
+        Relationships: []
       }
       orders: {
         Row: {
@@ -96,6 +102,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['orders']['Insert']>
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -110,11 +117,15 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['order_items']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['order_items']['Insert']>
+        Relationships: []
       }
     }
+    Views: Record<string, never>
     Functions: {
       auth_role: { Args: Record<never, never>; Returns: UserRole }
       auth_restaurant_id: { Args: Record<never, never>; Returns: string }
     }
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }

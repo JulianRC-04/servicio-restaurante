@@ -1,30 +1,22 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
-import type { UserRole } from '@/types/database'
-
-const ROLE_HOME: Record<UserRole, string> = {
-  owner:   '/dashboard/owner',
-  waiter:  '/dashboard/waiter',
-  kitchen: '/dashboard/kitchen',
-  bar:     '/dashboard/bar',
-}
-
-const PROTECTED_PREFIXES = ['/dashboard']
+import { type NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request })
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet) => {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options)
           )
         },
       },
@@ -32,46 +24,21 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const pathname = request.nextUrl.pathname
 
-  // Redirect unauthenticated users away from protected routes
-  const isProtected = PROTECTED_PREFIXES.some(p => pathname.startsWith(p))
-  if (isProtected && !user) {
+  const isLoginPage = request.nextUrl.pathname === '/login'
+  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
+
+  if (!user && isDashboard) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect authenticated users away from /login to their role home
-  if (pathname === '/login' && user) {
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role) {
-      return NextResponse.redirect(new URL(ROLE_HOME[profile.role], request.url))
-    }
+  if (user && isLoginPage) {
+    return NextResponse.redirect(new URL('/dashboard/waiter', request.url))
   }
 
-  // Guard: user can only access their own role's dashboard
-  if (isProtected && user) {
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role) {
-      const allowed = ROLE_HOME[profile.role]
-      if (!pathname.startsWith(allowed)) {
-        return NextResponse.redirect(new URL(allowed, request.url))
-      }
-    }
-  }
-
-  return response
+  return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ['/login', '/dashboard/:path*'],
 }
