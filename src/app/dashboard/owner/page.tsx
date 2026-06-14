@@ -1,21 +1,22 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getUserProfile } from '@/lib/supabase/admin'
 import LogoutButton from '@/components/auth/LogoutButton'
 
 export default async function OwnerDashboard() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('full_name, role')
-    .eq('id', user!.id)
-    .single()
+  if (!user) redirect('/login')
+
+  const profile = await getUserProfile(user.id)
+  if (profile?.role !== 'owner') redirect('/')
 
   return (
     <main className="min-h-screen bg-gray-950 text-white p-6">
       <header className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">Panel del dueño</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{profile?.full_name}</p>
+          <p className="text-sm text-gray-400 mt-0.5">{profile.full_name}</p>
         </div>
         <LogoutButton />
       </header>

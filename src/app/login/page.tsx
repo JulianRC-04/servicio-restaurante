@@ -3,14 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { UserRole } from '@/types/database'
-
-const ROLE_HOME: Record<UserRole, string> = {
-  owner:   '/dashboard/owner',
-  waiter:  '/dashboard/waiter',
-  kitchen: '/dashboard/kitchen',
-  bar:     '/dashboard/bar',
-}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,13 +25,7 @@ export default function LoginPage() {
       return
     }
 
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .single()
-
-    router.push(profile?.role ? ROLE_HOME[profile.role] : '/dashboard/waiter')
+    router.push('/')
   }
 
   return (

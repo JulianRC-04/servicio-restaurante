@@ -24,16 +24,11 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const { pathname } = request.nextUrl
 
-  const isLoginPage = request.nextUrl.pathname === '/login'
-  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
-
-  if (!user && isDashboard) {
+  // Only job of middleware: block unauthenticated access to /dashboard
+  if (!user && pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  if (user && isLoginPage) {
-    return NextResponse.redirect(new URL('/dashboard/waiter', request.url))
   }
 
   return supabaseResponse
